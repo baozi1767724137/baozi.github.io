@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>vue拦截器 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="##vue拦截器作用vue中怎样实现路由拦截器（当用户没有登录的时候，跳转到登录页面，已经登录的时候，不能跳转到登录页，除非后台token失效）在我们需要实现这样一个功能，登录拦截其实就是路由拦截，首先在定义路由的时候就需要多添加一个自定义字段requireAuth，用于判断该路由的访问是否需要登录。如果用户已经登录，则顺利进入路由，否则就进入登录页面。在路由管理页面添加meta字段 12345">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vue拦截器">
+<meta property="og:url" content="https://baozi1767724137.gitee.io/baozi/2021/01/25/vue%E6%8B%A6%E6%88%AA%E5%99%A8/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="##vue拦截器作用vue中怎样实现路由拦截器（当用户没有登录的时候，跳转到登录页面，已经登录的时候，不能跳转到登录页，除非后台token失效）在我们需要实现这样一个功能，登录拦截其实就是路由拦截，首先在定义路由的时候就需要多添加一个自定义字段requireAuth，用于判断该路由的访问是否需要登录。如果用户已经登录，则顺利进入路由，否则就进入登录页面。在路由管理页面添加meta字段 12345">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-01-25T06:59:21.000Z">
+<meta property="article:modified_time" content="2021-01-31T05:40:01.395Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="vue">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/baozi/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/baozi/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/baozi/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/baozi/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/baozi/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/baozi/">Home</a>
+        
+          <a class="main-nav-link" href="/baozi/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/baozi/atom.xml" title="RSS 订阅"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://baozi1767724137.gitee.io/baozi"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-vue拦截器" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/baozi/2021/01/25/vue%E6%8B%A6%E6%88%AA%E5%99%A8/" class="article-date">
+  <time class="dt-published" datetime="2021-01-25T06:59:21.000Z" itemprop="datePublished">2021-01-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/baozi/categories/day01/">day01</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      vue拦截器
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p> ##vue拦截器作用<br>vue中怎样实现路由拦截器（当用户没有登录的时候，跳转到登录页面，已经登录的时候，不能跳转到登录页，除非后台token失效）<br>在我们需要实现这样一个功能，登录拦截<br>其实就是路由拦截，首先在定义路由的时候就需要多添加一个自定义字段requireAuth，用于判断该路由的访问是否需要登录。如果用户已经登录，则顺利进入路由，否则就进入登录页面。在路由管理页面添加meta字段</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> axios <span class="keyword">from</span> <span class="string">&#x27;axios&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 配置默认的host,假如你的API host是：http://api.htmlx.club</span></span><br><span class="line">axios.defaults.baseURL = <span class="string">&#x27;http://api.htmlx.club&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 添加请求拦截器</span></span><br><span class="line">axios.interceptors.request.use(<span class="function"><span class="keyword">function</span> (<span class="params">config</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 在发送请求之前做些什么</span></span><br><span class="line">    <span class="keyword">return</span> config</span><br><span class="line">&#125;, <span class="function"><span class="keyword">function</span> (<span class="params">error</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 对请求错误做些什么</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Promise</span>.reject(error)</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 添加响应拦截器</span></span><br><span class="line">axios.interceptors.response.use(<span class="function"><span class="keyword">function</span> (<span class="params">response</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 对响应数据做点什么</span></span><br><span class="line">    <span class="keyword">return</span> response</span><br><span class="line">&#125;, <span class="function"><span class="keyword">function</span> (<span class="params">error</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 对响应错误做点什么</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Promise</span>.reject(error)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://baozi1767724137.gitee.io/baozi/2021/01/25/vue%E6%8B%A6%E6%88%AA%E5%99%A8/" data-id="ckklc428t000274ub2e4o5chz" data-title="vue拦截器" class="article-share-link">分享</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/baozi/tags/vue/" rel="tag">vue</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/baozi/2021/01/25/vue%E9%92%A9%E5%AD%90/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前一篇</strong>
+      <div class="article-nav-title">
+        
+          vue路由钩子
+        
+      </div>
+    </a>
+  
+  
+    <a href="/baozi/2021/01/23/%E4%B8%89%E6%96%B9%E6%94%AF%E4%BB%98/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">三方支付</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/baozi/categories/GIT/">GIT</a></li><li class="category-list-item"><a class="category-list-link" href="/baozi/categories/day01/">day01</a></li><li class="category-list-item"><a class="category-list-link" href="/baozi/categories/day02/">day02</a></li><li class="category-list-item"><a class="category-list-link" href="/baozi/categories/day3/">day3</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/baozi/tags/GIT/" rel="tag">GIT</a></li><li class="tag-list-item"><a class="tag-list-link" href="/baozi/tags/vue/" rel="tag">vue</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/baozi/tags/GIT/" style="font-size: 10px;">GIT</a> <a href="/baozi/tags/vue/" style="font-size: 20px;">vue</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/baozi/archives/2021/01/">一月 2021</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/baozi/2021/01/31/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/baozi/2021/01/27/%E7%88%B6%E5%AD%90%E7%BB%84%E4%BB%B6/">Vue父子组件 子父组件</a>
+          </li>
+        
+          <li>
+            <a href="/baozi/2021/01/25/vue%E9%92%A9%E5%AD%90/">vue路由钩子</a>
+          </li>
+        
+          <li>
+            <a href="/baozi/2021/01/25/vue%E6%8B%A6%E6%88%AA%E5%99%A8/">vue拦截器</a>
+          </li>
+        
+          <li>
+            <a href="/baozi/2021/01/23/%E4%B8%89%E6%96%B9%E6%94%AF%E4%BB%98/">三方支付</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2021 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/baozi/" class="mobile-nav-link">Home</a>
+  
+    <a href="/baozi/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/baozi/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/baozi/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/baozi/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
